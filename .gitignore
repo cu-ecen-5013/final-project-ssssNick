@@ -1,0 +1,3 @@
+*.o
+prj_base/aesd_lcd_util.h.gch
+aesd_lcd_util

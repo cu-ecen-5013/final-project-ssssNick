@@ -21,7 +21,7 @@ default : aesd_lcd_util
 aesd_lcd_util : $(OBJ)
 	$(CC) $(CFLAGS) -o aesd_lcd_util $^ $(INCLUDES) $(LDFLAGS)
 
-%.o : ./prj_base/%.c $(DEP)
+%.o : prj_base/%.c $(DEP)
 	$(CC) $(CFLAGS) -c $^ $(INCLUDES) $(LDFLAGS)
 
 clean :

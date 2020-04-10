@@ -10,7 +10,7 @@ ifeq ($(LDFLAGS),)
 #	LDFLAGS := -pthread -lrt
 endif
 
-all : clean_all aesd_lcd_util
+all : clean aesd_lcd_util
 
 default : aesd_lcd_util
 

@@ -8,6 +8,7 @@
  * External code used: 
  * 	https://github.com/eeenjoy/I2C_LCD2004/blob/master/For_Raspberry_Pi/C/i2c_lcd2004_test.c
  *  https://github.com/WiringPi/WiringPi/blob/master/wiringPi/wiringPiI2C.c
+ *  https://gist.github.com/jnewc/f8b668c41d7d4a68f6e46f46e8c559c2
  */
 
 #include <linux/init.h>
@@ -18,7 +19,7 @@
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/fs.h> // file_operations
-#include <linux/i2c-dev.h>
+#include <linux/i2c.h>
 
 #include "lcd.h"
 int lcd_major =   0; // use dynamic major
@@ -127,7 +128,7 @@ static int lcd_init_module(void)
 		unregister_chrdev_region(dev, 1);
 	}
 
-	if ((fd = i2cdev_open("/dev/i2c-0", O_RDWR)) < 0)
+	//if ((fd = i2cdev_open("/dev/i2c-0", O_RDWR)) < 0)
 	//init();
 
 	return result;

@@ -5,6 +5,9 @@
  * @author Nick Brubaker
  * @date 2020-4-8
  *
+ * External code used: 
+ * 	https://github.com/eeenjoy/I2C_LCD2004/blob/master/For_Raspberry_Pi/C/i2c_lcd2004_test.c
+ *  https://github.com/WiringPi/WiringPi/blob/master/wiringPi/wiringPiI2C.c
  */
 
 #include <linux/init.h>
@@ -15,16 +18,78 @@
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/fs.h> // file_operations
+#include <linux/i2c.h>
+
 #include "lcd.h"
 int lcd_major =   0; // use dynamic major
 int lcd_minor =   0;
+int LCDAddr = 0x3F;
+int fd;
 
 MODULE_LICENSE("Dual BSD/GPL");
 
 struct lcd_dev lcd_device;
 
+int lcd_open(struct inode *inode, struct file *filp)
+{
+	struct lcd_dev *dev;
+
+	PDEBUG("open");
+
+	dev = container_of(inode->i_cdev, struct lcd_dev, cdev);
+	filp->private_data = dev;
+
+	return 0;
+}
+
+int lcd_release(struct inode *inode, struct file *filp)
+{
+	PDEBUG("release");
+	return 0;
+}
+
+ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
+                loff_t *f_pos)
+{
+	ssize_t retval = -ENOMEM;
+	struct lcd_dev *dev = filp->private_data;
+	char *kern_buf;
+	size_t i;
+
+	PDEBUG("write %zu bytes",count);
+	
+	mutex_lock(&(dev->lock));
+
+	kern_buf = kmalloc(count, GFP_KERNEL);
+	if(kern_buf == NULL)
+	{
+		goto out;
+	}
+
+	if(copy_from_user(kern_buf, buf, count))
+	{
+		retval = -EFAULT;
+		goto free;
+	}
+
+	for(i = 0; i < count; i++)
+	{
+		
+	}
+
+	retval = count;
+
+free:
+	kfree(kern_buf);
+
+out:
+	mutex_unlock(&(dev->lock));
+	return retval;
+}
+
 struct file_operations lcd_fops = {
-	.owner =    THIS_MODULE
+	.owner =    THIS_MODULE,
+	.write =    lcd_write,
 };
 
 static int lcd_setup_cdev(struct lcd_dev *dev)
@@ -62,7 +127,8 @@ static int lcd_init_module(void)
 		unregister_chrdev_region(dev, 1);
 	}
 
-	printk(KERN_ALERT "Hello from LCD module!\n");
+	if ((fd = open("/dev/i2c-0", O_RDWR)) < 0)
+	//init();
 
 	return result;
 }

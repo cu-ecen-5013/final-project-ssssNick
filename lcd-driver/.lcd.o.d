@@ -212,21 +212,6 @@ lcd.o: /home/nick/Documents/gcc/final-project-ssssNick/lcd-driver/lcd.c \
  include/linux/percpu_counter.h include/uapi/linux/dqblk_xfs.h \
  include/linux/dqblk_v1.h include/linux/dqblk_v2.h \
  include/linux/dqblk_qtree.h include/linux/projid.h \
- include/uapi/linux/quota.h include/linux/nfs_fs_i.h include/linux/i2c.h \
- include/linux/acpi.h include/linux/irqdomain.h \
- include/linux/irqhandler.h include/linux/of.h \
- include/linux/mod_devicetable.h include/linux/property.h \
- include/linux/resource_ext.h include/acpi/acpi.h \
- include/acpi/platform/acenv.h include/acpi/platform/acgcc.h \
- include/acpi/platform/aclinux.h include/linux/ctype.h \
- arch/x86/include/asm/acenv.h include/acpi/acnames.h \
- include/acpi/actypes.h include/acpi/acexcep.h include/acpi/actbl.h \
- include/acpi/actbl1.h include/acpi/actbl2.h include/acpi/actbl3.h \
- include/acpi/acrestyp.h include/acpi/platform/acenvex.h \
- include/acpi/platform/aclinuxex.h include/acpi/platform/acgccex.h \
- include/acpi/acoutput.h include/acpi/acpiosxf.h include/acpi/acpixf.h \
- include/acpi/acconfig.h include/acpi/acbuffer.h include/acpi/acpi_bus.h \
- include/linux/proc_fs.h include/acpi/acpi_drivers.h \
- include/acpi/acpi_numa.h include/acpi/acpi_io.h include/linux/io.h \
- include/linux/rtmutex.h include/uapi/linux/i2c.h \
+ include/uapi/linux/quota.h include/linux/nfs_fs_i.h \
+ include/linux/i2c-dev.h include/uapi/linux/i2c-dev.h \
  /home/nick/Documents/gcc/final-project-ssssNick/lcd-driver/lcd.h

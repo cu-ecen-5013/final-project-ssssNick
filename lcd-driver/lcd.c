@@ -61,7 +61,7 @@ void send_command(int comm)
 	buf = comm & 0xF0;
 	buf |= 0x04;			// RS = 0, RW = 0, EN = 1
 	write_word(buf);
-	usleep_range(2, 10);
+	usleep_range(2000, 3000);
 	buf &= 0xFB;			// Make EN = 0
 	write_word(buf);
 
@@ -69,7 +69,7 @@ void send_command(int comm)
 	buf = (comm & 0x0F) << 4;
 	buf |= 0x04;			// RS = 0, RW = 0, EN = 1
 	write_word(buf);
-	usleep_range(2, 10);
+	usleep_range(2000, 3000);
 	buf &= 0xFB;			// Make EN = 0
 	write_word(buf);
 }
@@ -81,7 +81,7 @@ void send_data(int data)
 	buf = data & 0xF0;
 	buf |= 0x05;			// RS = 1, RW = 0, EN = 1
 	write_word(buf);
-	usleep_range(2, 10);
+	usleep_range(2000, 3000);
 	buf &= 0xFB;			// Make EN = 0
 	write_word(buf);
 
@@ -89,7 +89,7 @@ void send_data(int data)
 	buf = (data & 0x0F) << 4;
 	buf |= 0x05;			// RS = 1, RW = 0, EN = 1
 	write_word(buf);
-	usleep_range(2, 10);
+	usleep_range(2000, 3000);
 	buf &= 0xFB;			// Make EN = 0
 	write_word(buf);
 }
@@ -97,13 +97,13 @@ void send_data(int data)
 void init_lcd( void )
 {
 	send_command(0x33);	// Must initialize to 8-line mode at first
-	usleep_range(5, 10);
+	usleep_range(5000, 6000);
 	send_command(0x32);	// Then initialize to 4-line mode
-	usleep_range(5, 10);
+	usleep_range(5000, 6000);
 	send_command(0x28);	// 2 Lines & 5*7 dots
-	usleep_range(5, 10);
+	usleep_range(5000, 6000);
 	send_command(0x0C);	// Enable display without cursor
-	usleep_range(5, 10);
+	usleep_range(5000, 6000);
 	send_command(0x01);	// Clear Screen
 	i2c_smbus_write_byte_data(i2c_client, 0x08, 0);
 }
@@ -157,7 +157,7 @@ ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
 
 	for(i = 0; i < count; i++)
 	{
-		send_data(buf[i]);
+		send_data(kern_buf[i]);
 	}
 
 	retval = count;

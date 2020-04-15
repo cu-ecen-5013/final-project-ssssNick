@@ -19,17 +19,95 @@
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/fs.h> // file_operations
+#include <linux/delay.h>
 #include <linux/i2c.h>
+
+#define LCD_ADDR 0x3F
 
 #include "lcd.h"
 int lcd_major =   0; // use dynamic major
 int lcd_minor =   0;
-int LCDAddr = 0x3F;
-int fd;
+int BLEN = 1;
 
 MODULE_LICENSE("Dual BSD/GPL");
 
 struct lcd_dev lcd_device;
+
+
+struct i2c_adapter* i2c_dev;
+struct i2c_client* i2c_client;
+
+static struct i2c_board_info __initdata board_info[] =  {
+	{
+		I2C_BOARD_INFO("PCF8574", LCD_ADDR),
+	}
+};
+
+
+void write_word(int data)
+{
+    int temp = data;
+	if ( BLEN == 1 )
+		temp |= 0x08;
+	else
+		temp &= 0xF7;
+	i2c_smbus_write_byte_data(i2c_client, temp, 0);
+}
+
+void send_command(int comm)
+{
+	int buf;
+	// Send bit7-4 firstly
+	buf = comm & 0xF0;
+	buf |= 0x04;			// RS = 0, RW = 0, EN = 1
+	write_word(buf);
+	usleep_range(2, 10);
+	buf &= 0xFB;			// Make EN = 0
+	write_word(buf);
+
+	// Send bit3-0 secondly
+	buf = (comm & 0x0F) << 4;
+	buf |= 0x04;			// RS = 0, RW = 0, EN = 1
+	write_word(buf);
+	usleep_range(2, 10);
+	buf &= 0xFB;			// Make EN = 0
+	write_word(buf);
+}
+
+void send_data(int data)
+{
+	int buf;
+	// Send bit7-4 firstly
+	buf = data & 0xF0;
+	buf |= 0x05;			// RS = 1, RW = 0, EN = 1
+	write_word(buf);
+	usleep_range(2, 10);
+	buf &= 0xFB;			// Make EN = 0
+	write_word(buf);
+
+	// Send bit3-0 secondly
+	buf = (data & 0x0F) << 4;
+	buf |= 0x05;			// RS = 1, RW = 0, EN = 1
+	write_word(buf);
+	usleep_range(2, 10);
+	buf &= 0xFB;			// Make EN = 0
+	write_word(buf);
+}
+
+void init_lcd( void )
+{
+	send_command(0x33);	// Must initialize to 8-line mode at first
+	usleep_range(5, 10);
+	send_command(0x32);	// Then initialize to 4-line mode
+	usleep_range(5, 10);
+	send_command(0x28);	// 2 Lines & 5*7 dots
+	usleep_range(5, 10);
+	send_command(0x0C);	// Enable display without cursor
+	usleep_range(5, 10);
+	send_command(0x01);	// Clear Screen
+	i2c_smbus_write_byte_data(i2c_client, 0x08, 0);
+}
+
 
 int lcd_open(struct inode *inode, struct file *filp)
 {
@@ -56,6 +134,7 @@ ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
 	struct lcd_dev *dev = filp->private_data;
 	char *kern_buf;
 	size_t i;
+	int addr;
 
 	PDEBUG("write %zu bytes",count);
 	
@@ -73,9 +152,12 @@ ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
 		goto free;
 	}
 
+	addr = 0x80;
+	send_command(addr);
+
 	for(i = 0; i < count; i++)
 	{
-		
+		send_data(buf[i]);
 	}
 
 	retval = count;
@@ -122,14 +204,16 @@ static int lcd_init_module(void)
 
 	mutex_init(&(lcd_device.lock));
 
+	i2c_dev = i2c_get_adapter(1);
+	i2c_client = i2c_new_device(i2c_dev, board_info);
+
+	init_lcd();
+
 	result = lcd_setup_cdev(&lcd_device);
 
 	if( result ) {
 		unregister_chrdev_region(dev, 1);
 	}
-
-	//if ((fd = i2cdev_open("/dev/i2c-0", O_RDWR)) < 0)
-	//init();
 
 	return result;
 }
@@ -139,6 +223,8 @@ static void lcd_cleanup_module(void)
 	dev_t devno = MKDEV(lcd_major, lcd_minor);
 
 	cdev_del(&lcd_device.cdev);
+
+	i2c_unregister_device(i2c_client);
 
 	unregister_chrdev_region(devno, 1);
 }

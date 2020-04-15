@@ -138,7 +138,7 @@ ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
 
 	PDEBUG("write %zu bytes",count);
 	
-	mutex_lock(&(dev->lock));
+	//mutex_lock(&(dev->lock));
 
 	kern_buf = kmalloc(count, GFP_KERNEL);
 	if(kern_buf == NULL)
@@ -166,7 +166,7 @@ free:
 	kfree(kern_buf);
 
 out:
-	mutex_unlock(&(dev->lock));
+	//mutex_unlock(&(dev->lock));
 	return retval;
 }
 

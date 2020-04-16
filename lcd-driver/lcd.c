@@ -51,7 +51,7 @@ void write_word(int data)
 		temp |= 0x08;
 	else
 		temp &= 0xF7;
-	i2c_smbus_write_byte_data(i2c_client, temp, 0);
+	i2c_smbus_write_byte(i2c_client, temp);
 }
 
 void send_command(int comm)
@@ -105,7 +105,7 @@ void init_lcd( void )
 	send_command(0x0C);	// Enable display without cursor
 	usleep_range(5000, 6000);
 	send_command(0x01);	// Clear Screen
-	i2c_smbus_write_byte_data(i2c_client, 0x08, 0);
+	i2c_smbus_write_byte(i2c_client, 0x08);
 }
 
 
@@ -204,7 +204,7 @@ static int lcd_init_module(void)
 
 	mutex_init(&(lcd_device.lock));
 
-	i2c_dev = i2c_get_adapter(5);
+	i2c_dev = i2c_get_adapter(1);
 	i2c_client = i2c_new_device(i2c_dev, board_info);
 
 	init_lcd();

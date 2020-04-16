@@ -204,7 +204,7 @@ static int lcd_init_module(void)
 
 	mutex_init(&(lcd_device.lock));
 
-	i2c_dev = i2c_get_adapter(0);
+	i2c_dev = i2c_get_adapter(5);
 	i2c_client = i2c_new_device(i2c_dev, board_info);
 
 	init_lcd();

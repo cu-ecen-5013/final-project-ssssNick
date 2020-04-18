@@ -22,7 +22,7 @@
 #include <linux/delay.h>
 #include <linux/i2c.h>
 
-#define LCD_ADDR 0x3F
+#define LCD_ADDR 0x27
 
 #include "lcd.h"
 int lcd_major =   0; // use dynamic major

@@ -140,7 +140,7 @@ ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
 	size_t i;
 	int addr;
 
-	PDEBUG("write %zu bytes",count);
+	PDEBUG("write %zu bytes", count);
 	
 	//mutex_lock(&(dev->lock));
 

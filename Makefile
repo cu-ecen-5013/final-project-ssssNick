@@ -1,3 +1,6 @@
+
+EXE := aesd_lcd_util_sp1
+
 ifeq ($(CC),)
 	CC   := $(CROSS_COMPILE)gcc
 endif
@@ -10,12 +13,27 @@ ifeq ($(LDFLAGS),)
 #	LDFLAGS := -pthread -lrt
 endif
 
-all : clean aesd_lcd_util
+default : clean $(EXE)
 
-default : aesd_lcd_util
+all : clean_all subdir_lcd-util_all subdir_prj_base_all $(EXE)
 
-aesd_lcd_util : aesd_lcd_util.c
-	$(CC) $(CFLAGS) -o aesd_lcd_util aesd_lcd_util.c $(INCLUDES) $(LDFLAGS)
+$(EXE) : aesd_lcd_util.c
+	$(CC) $(CFLAGS) -o $(EXE) aesd_lcd_util.c $(INCLUDES) $(LDFLAGS)
+
+subdir_lcd-util_all :
+	$(MAKE) -C lcd-util all
+
+subdir_prj_base_all :
+	$(MAKE) -C prj_base all
 
 clean :
-	rm -f aesd_lcd_util
+	rm -f $(EXE)
+
+clean_all : subdir_lcd-util_clean subdir_prj_base_clean
+	rm -f $(EXE)
+
+subdir_lcd-util_clean : 
+	$(MAKE) -C lcd-util clean
+
+subdir_prj_base_clean : 
+	$(MAKE) -C prj_base clean

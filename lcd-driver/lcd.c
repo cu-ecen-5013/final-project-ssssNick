@@ -46,16 +46,16 @@ static struct i2c_board_info __initdata board_info[] =  {
 
 void write_word(int data)
 {
-	size_t retval;
+	int retval;
 
     int temp = data;
 	if ( BLEN == 1 )
 		temp |= 0x08;
 	else
 		temp &= 0xF7;
-	i2c_smbus_write_byte(i2c_client, temp);
+	retval = i2c_smbus_write_byte(i2c_client, temp);
 
-	PDEBUG("i2c_smbus_write_byte return val: %z\n", retval);
+	PDEBUG("i2c_smbus_write_byte return val: %d", retval);
 }
 
 void send_command(int comm)

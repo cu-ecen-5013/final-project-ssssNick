@@ -129,7 +129,10 @@ int call_read_test_f( struct aesd_struct *util_struct )
 
             if( util_struct->a != NULL )
             {
-                while( (util_struct->a[2] == 1) && (util_struct->a[3] == 0) && (util_struct->flag_exit == 0) );
+                while( (util_struct->a[2] == 1) && (util_struct->a[3] == 0) && (util_struct->flag_exit == 0) )
+                {
+                    sleep(1);
+                }
 
                 util_struct->a[0] = cnt_i;
                 util_struct->a[1] = pid_i;
@@ -411,7 +414,10 @@ int setup_read_f( struct aesd_struct *util_struct )
     {
         util_struct->a = (int *) shmat(util_struct->shmid, 0, 0);
 
-        rd_shared_mem_f( util_struct );
+        //rd_shared_mem_f( util_struct );
+        call_write_lcd_f( util_struct );
+
+        //util_struct->write_lcd_f( util_struct );
     
         if( util_struct->a[3] == 1 )
         {

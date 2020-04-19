@@ -1,7 +1,7 @@
 
 EXE := aesd_lcd_util
 
-OBJ := aesd_lcd_func.o aesd_lcd_util.o lcd.o wiringPi.o wiringPiI2C.o
+OBJ := aesd_lcd_func.o aesd_write_lcd.o aesd_lcd_util.o lcd.o wiringPi.o wiringPiI2C.o
 DEP := aesd_lcd_util.h lcd.h version.h wiringPi.h wiringPiI2C.h
 
 ifeq ($(CC),)

@@ -7,7 +7,6 @@
  *
  * External code used: 
  * 	https://github.com/eeenjoy/I2C_LCD2004/blob/master/For_Raspberry_Pi/C/i2c_lcd2004_test.c
- *  https://github.com/WiringPi/WiringPi/blob/master/wiringPi/wiringPiI2C.c
  *  https://gist.github.com/jnewc/f8b668c41d7d4a68f6e46f46e8c559c2
  */
 
@@ -34,6 +33,8 @@ MODULE_LICENSE("Dual BSD/GPL");
 struct lcd_dev lcd_device;
 
 
+/* I2C structs */
+
 struct i2c_adapter* i2c_dev;
 struct i2c_client* i2c_client;
 
@@ -44,18 +45,16 @@ static struct i2c_board_info __initdata board_info[] =  {
 };
 
 
+/* LCD helper functions */
+
 void write_word(int data)
 {
-	int retval;
-
     int temp = data;
 	if ( BLEN == 1 )
 		temp |= 0x08;
 	else
 		temp &= 0xF7;
-	retval = i2c_smbus_write_byte(i2c_client, temp);
-
-	PDEBUG("i2c_smbus_write_byte return val: %d", retval);
+	i2c_smbus_write_byte(i2c_client, temp);
 }
 
 void send_command(int comm)
@@ -113,15 +112,11 @@ void init_lcd( void )
 }
 
 
+/* Module functions */
+
 int lcd_open(struct inode *inode, struct file *filp)
 {
-	struct lcd_dev *dev;
-
 	PDEBUG("open");
-
-	dev = container_of(inode->i_cdev, struct lcd_dev, cdev);
-	filp->private_data = dev;
-
 	return 0;
 }
 
@@ -135,14 +130,13 @@ ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
                 loff_t *f_pos)
 {
 	ssize_t retval = -ENOMEM;
-	struct lcd_dev *dev = filp->private_data;
 	char *kern_buf;
 	size_t i;
 	int addr;
 
 	PDEBUG("write %zu bytes", count);
 	
-	//mutex_lock(&(dev->lock));
+	mutex_lock(&(lcd_device.lock));
 
 	kern_buf = kmalloc(count, GFP_KERNEL);
 	if(kern_buf == NULL)
@@ -170,7 +164,7 @@ free:
 	kfree(kern_buf);
 
 out:
-	//mutex_unlock(&(dev->lock));
+	mutex_unlock(&(lcd_device.lock));
 	return retval;
 }
 

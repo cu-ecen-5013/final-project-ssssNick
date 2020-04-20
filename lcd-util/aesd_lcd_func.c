@@ -206,6 +206,11 @@ int call_write_test_f( struct aesd_struct *util_struct )
         while( val > 0 )
         {
             val = sleep( val );
+
+            if( util_struct->flag_exit == 1 )
+            {
+                return 0;
+            }
         }
 
         util_struct->fd = open( fifo_p, O_WRONLY | O_NONBLOCK );
@@ -352,11 +357,14 @@ int struct_setup_f( int argc, char **argv, struct aesd_struct *util_struct )
     }
     else
     {
-        util_struct->read_f  = call_default_f;
-        util_struct->write_f = write_lcd_f;//call_default_f;
+        util_struct->read_f  = test_func_1;//call_default_f;
+        util_struct->write_f = call_default_f;
     }
 
     util_struct->daemon_f = call_daemon_f;
+
+    util_struct->line1 = ASED_16x2_LINE1;
+    util_struct->line2 = ASED_16x2_LINE2;
 
     return 0;
 }
@@ -472,125 +480,67 @@ int rd_shared_mem_f( struct aesd_struct *util_struct )
     return 0;
 }
 
-int write_lcd_f( struct aesd_struct *util_struct )
+/**********************************************/
+/* re-purposed functions from the lcd example */
+/* in wiringPi                                */
+/**********************************************/
+void aesd_lcd_init( int input_fd )
 {
-    int ii = 0;
+    // Initialise display
+    aesd_lcd_byte( input_fd, 0x33, AESD_LCD_CMD ); // Initialise
+    aesd_lcd_byte( input_fd, 0x32, AESD_LCD_CMD ); // Initialise
+    aesd_lcd_byte( input_fd, 0x06, AESD_LCD_CMD ); // Cursor move direction
+    aesd_lcd_byte( input_fd, 0x0C, AESD_LCD_CMD ); // 0x0F On, Blink Off
+    aesd_lcd_byte( input_fd, 0x28, AESD_LCD_CMD ); // Data length, number of lines, font size
+    aesd_lcd_byte( input_fd, 0x01, AESD_LCD_CMD ); // Clear display
+    delayMicroseconds(500);
+}
 
-    if (wiringPiSetup () == -1) exit (1);
+void aesd_lcd_byte( int input_fd, int bits, int mode )
+{
+    //Send byte to data pins
+    // bits = the data
+    // mode = 1 for data, 0 for command
+    int bits_high;
+    int bits_low;
+    // uses the two half byte writes to LCD
+    bits_high = mode | (bits & 0xF0) | AESD_LCD_BACKLT;
+    bits_low  = mode | ((bits << 4) & 0xF0) | AESD_LCD_BACKLT;
 
-    fd = wiringPiI2CSetup(I2C_ADDR);
+    // High bits
+    wiringPiI2CReadReg8(input_fd, bits_high);
+    aesd_lcd_toggle(input_fd, bits_high);
 
-    util_struct->fd = fd;
+    // Low bits
+    wiringPiI2CReadReg8(input_fd, bits_low);
+    aesd_lcd_toggle(input_fd, bits_low);
+}
 
-    lcd_init(); // setup LCD
+void aesd_lcd_clear( int input_fd )
+{
+    aesd_lcd_byte( input_fd, 0x01, AESD_LCD_CMD );
+    aesd_lcd_byte( input_fd, 0x02, AESD_LCD_CMD );
+}
 
-    lcdLoc(LINE1);
-    typeln("Using wiringPi");
-    lcdLoc(LINE2);
-    typeln("Sublime editor.");
+void aesd_lcd_loc( int input_fd, int line )
+{
+    aesd_lcd_byte( input_fd, line, AESD_LCD_CMD );
+}
 
-    while( ii < 5 )
+void aesd_lcd_type_ln( int input_fd, const char *s )
+{
+    while( *s )
     {
-        sleep(5);
-        ClrLcd();
-        lcdLoc(LINE1);
-        typeln("Showing Line 1");
-        lcdLoc(LINE2);
-        typeln("Showing Line 2");
-
-        sleep(5);
-        ClrLcd();
-        lcdLoc(LINE1);
-        typeln("Showing Line 3");
-        lcdLoc(LINE2);
-        typeln("Showing Line 4");
-
-        ii++;
+        aesd_lcd_byte( input_fd, *(s++), AESD_LCD_CHR);
     }
-
-    close(fd);
-
-    util_struct->fd = 0;
-
-    return 0;
 }
 
-// float to string
-void typeFloat(float myFloat)   {
-  char buffer[20];
-  sprintf(buffer, "%4.2f",  myFloat);
-  typeln(buffer);
-}
-
-// int to string
-void typeInt(int i)   {
-  char array1[20];
-  sprintf(array1, "%d",  i);
-  typeln(array1);
-}
-
-// clr lcd go home loc 0x80
-void ClrLcd(void)   {
-  lcd_byte(0x01, LCD_CMD);
-  lcd_byte(0x02, LCD_CMD);
-}
-
-// go to location on LCD
-void lcdLoc(int line)   {
-  lcd_byte(line, LCD_CMD);
-}
-
-// out char to LCD at current position
-void typeChar(char val)   {
-
-  lcd_byte(val, LCD_CHR);
-}
-
-
-// this allows use of any size string
-void typeln(const char *s)   {
-
-  while ( *s ) lcd_byte(*(s++), LCD_CHR);
-
-}
-
-void lcd_byte(int bits, int mode)   {
-
-  //Send byte to data pins
-  // bits = the data
-  // mode = 1 for data, 0 for command
-  int bits_high;
-  int bits_low;
-  // uses the two half byte writes to LCD
-  bits_high = mode | (bits & 0xF0) | LCD_BACKLIGHT ;
-  bits_low = mode | ((bits << 4) & 0xF0) | LCD_BACKLIGHT ;
-
-  // High bits
-  wiringPiI2CReadReg8(fd, bits_high);
-  lcd_toggle_enable(bits_high);
-
-  // Low bits
-  wiringPiI2CReadReg8(fd, bits_low);
-  lcd_toggle_enable(bits_low);
-}
-
-void lcd_toggle_enable(int bits)   {
-  // Toggle enable pin on LCD display
-  delayMicroseconds(500);
-  wiringPiI2CReadReg8(fd, (bits | ENABLE));
-  delayMicroseconds(500);
-  wiringPiI2CReadReg8(fd, (bits & ~ENABLE));
-  delayMicroseconds(500);
-}
-
-
-void lcd_init()   {
-  // Initialise display
-  lcd_byte(0x33, LCD_CMD); // Initialise
-  lcd_byte(0x32, LCD_CMD); // Initialise
-  lcd_byte(0x06, LCD_CMD); // Cursor move direction
-  lcd_byte(0x0C, LCD_CMD); // 0x0F On, Blink Off
-  lcd_byte(0x28, LCD_CMD); // Data length, number of lines, font size
-  lcd_byte(0x01, LCD_CMD); // Clear display
-  delayMicroseconds(500);
+void aesd_lcd_toggle( int input_fd, int bits )
+{
+    // Toggle enable pin on LCD display
+    delayMicroseconds(500);
+    wiringPiI2CReadReg8(input_fd, (bits | AESD_LCD_ENABLE));
+    delayMicroseconds(500);
+    wiringPiI2CReadReg8(input_fd, (bits & ~AESD_LCD_ENABLE));
+    delayMicroseconds(500);
 }

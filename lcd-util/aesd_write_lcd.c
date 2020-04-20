@@ -9,19 +9,19 @@ int call_write_lcd_f ( struct aesd_struct *util_struct )
     char ln1 [16] = "From PID _____";
     char ln2 [16] = "Rec val _____";
 
-    if (wiringPiSetup () == -1) exit (1);
-
-    fd = wiringPiI2CSetup(I2C_ADDR);
-
-    lcd_init(); // setup LCD
-
     syslog( LOG_DEBUG, "Func 2 screen with packet @%p", util_struct );
 
-    ClrLcd();
-    lcdLoc( LINE1 );
-    typeln( "In call_write_lcd_f"   );
-    lcdLoc( LINE2 );
-    typeln( "Waiting for info"   );
+    if (wiringPiSetup () == -1) exit (1);
+
+    util_struct->i2c_fd = wiringPiI2CSetup( AESD_I2C_ADDR );
+
+    aesd_lcd_init( util_struct->i2c_fd );
+
+    aesd_lcd_clear  ( util_struct->i2c_fd );
+    aesd_lcd_loc    ( util_struct->i2c_fd, util_struct->line1 );
+    aesd_lcd_type_ln( util_struct->i2c_fd, "In call_write_lcd_f" );
+    aesd_lcd_loc    ( util_struct->i2c_fd, util_struct->line2 );
+    aesd_lcd_type_ln( util_struct->i2c_fd, "Waiting for info" );
 
     if( util_struct->a == NULL )
     {
@@ -40,11 +40,11 @@ int call_write_lcd_f ( struct aesd_struct *util_struct )
             value_pack( cnt_i, &ln2[8] );
             value_pack( pid_i, &ln1[9] );
 
-            ClrLcd();
-            lcdLoc( LINE1 );
-            typeln( ln1   );
-            lcdLoc( LINE2 );
-            typeln( ln2   );
+            aesd_lcd_clear  ( util_struct->i2c_fd );
+            aesd_lcd_loc    ( util_struct->i2c_fd, util_struct->line1 );
+            aesd_lcd_type_ln( util_struct->i2c_fd, ln1 );
+            aesd_lcd_loc    ( util_struct->i2c_fd, util_struct->line2 );
+            aesd_lcd_type_ln( util_struct->i2c_fd, ln2 );
 
             util_struct->a[2] = 0;
 
@@ -62,13 +62,40 @@ int call_write_lcd_f ( struct aesd_struct *util_struct )
     }
     sleep(1);
 
-    ClrLcd();
-    lcdLoc( LINE1 );
-    typeln( "Thanks but I'm"   );
-    lcdLoc( LINE2 );
-    typeln( "out of here!!"   );
+    aesd_lcd_clear  ( util_struct->i2c_fd );
+    aesd_lcd_loc    ( util_struct->i2c_fd, util_struct->line1 );
+    aesd_lcd_type_ln( util_struct->i2c_fd, "Thanks but I'm" );
+    aesd_lcd_loc    ( util_struct->i2c_fd, util_struct->line2 );
+    aesd_lcd_type_ln( util_struct->i2c_fd, "out of here!!" );
 
-    close(fd);
+    close(util_struct->i2c_fd);
+    util_struct->i2c_fd = 0;
+
+    return 0;
+}
+
+int test_func_1( struct aesd_struct *util_struct )
+{
+    int fd1 = 0;
+
+    syslog( LOG_DEBUG, "Test func 1; testing LCD with ported functions" );
+
+    if (wiringPiSetup () == -1) exit (1);
+
+    fd1 = wiringPiI2CSetup( AESD_I2C_ADDR );
+
+    // lcd_init(); // setup LCD
+    aesd_lcd_init( fd1 );
+
+    aesd_lcd_clear  ( fd1 );
+    aesd_lcd_loc    ( fd1, util_struct->line1 );
+    aesd_lcd_type_ln( fd1, "Thanks for the" );
+    aesd_lcd_loc    ( fd1, util_struct->line2 );
+    aesd_lcd_type_ln( fd1, "time we shared" );
+
+    close(fd1);
+
+    util_struct->i2c_fd = 0;
 
     return 0;
 }

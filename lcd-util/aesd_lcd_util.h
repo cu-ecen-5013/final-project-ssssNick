@@ -19,7 +19,6 @@
 
 #include "wiringPi.h"
 #include "wiringPiI2C.h"
-#include "lcd.h"
 
 #define ZERO  (0)
 #define ONE   (1)
@@ -30,29 +29,20 @@
 #define RD_VAL (2000)       /* ms  */
 #define WR_VAL (30)         /* sec */
 
-/////////////////////////////////////////////////////////////////
-
 #define TEST_BUFFER_SIZE (85)
 
-// Define some device parameters
-#define I2C_ADDR   0x27 // I2C device address
-
-// Define some device constants
-#define LCD_CHR  1 // Mode - Sending data
-#define LCD_CMD  0 // Mode - Sending command
-
-#define LINE1  0x80 // 1st line
-#define LINE2  0xC0 // 2nd line
-
-#define LCD_BACKLIGHT   0x08  // On
-// LCD_BACKLIGHT = 0x00  # Off
-
-#define ENABLE  0b00000100 // Enable bit
-
-
-int fd;
-
-/////////////////////////////////////////////////////////////////
+/********************************************/
+/* re-purposed defines from the lcd example */
+/* in wiringPi                              */
+/********************************************/
+#define AESD_I2C_ADDR   (0x27)
+#define AESD_LCD_CHR    (1) // Mode - Sending data
+#define AESD_LCD_CMD    (0) // Mode - Sending command
+#define ASED_16x2_LINE1 (0x80) // 1st line
+#define ASED_16x2_LINE2 (0xC0) // 2nd line
+#define AESD_LCD_BACKLT (0x08)  // On
+#define AESD_LCD_ENABLE (0b00000100) // Enable bit
+//////////////////////////////////////////////
 
 /* global exit flag; set by signal handler */
 int *flag_to_exit;
@@ -78,6 +68,8 @@ struct aesd_struct
     /* */
     int fd;
 
+    int i2c_fd;
+
     int shmid;
     int status;
 
@@ -86,6 +78,11 @@ struct aesd_struct
 
     int  pack_size;
     char pack_data[TEST_BUFFER_SIZE];
+
+    int line1;
+    int line2;
+    int line3;
+    int line4;
 
     /* function handlers */
     int (*daemon_f)( struct aesd_struct * );
@@ -123,20 +120,17 @@ int struct_setup_f ( int , char **, struct aesd_struct * );
 void value_pack   ( int input_val, char *buf );
 int  value_unpack ( char *buf );
 
-/////////////////////////////////////////////////////////////////
+int test_func_1( struct aesd_struct *util_struct );
 
-void lcd_init(void);
-void lcd_byte(int bits, int mode);
-void lcd_toggle_enable(int bits);
-
-// added by Lewis
-void typeInt(int i);
-void typeFloat(float myFloat);
-void lcdLoc(int line); //move cursor
-void ClrLcd(void); // clr LCD return home
-void typeln(const char *s);
-void typeChar(char val);
-
-/////////////////////////////////////////////////////////////////
+/**********************************************/
+/* re-purposed functions from the lcd example */
+/* in wiringPi                                */
+/**********************************************/
+void aesd_lcd_init   ( int input_fd );
+void aesd_lcd_byte   ( int input_fd, int bits, int mode );
+void aesd_lcd_clear  ( int input_fd );
+void aesd_lcd_loc    ( int input_fd, int line );
+void aesd_lcd_type_ln( int input_fd, const char *s );
+void aesd_lcd_toggle ( int input_fd, int bits );
 
 #endif

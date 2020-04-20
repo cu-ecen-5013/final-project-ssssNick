@@ -1,8 +1,8 @@
 
 EXE := aesd_lcd_util
 
-OBJ := aesd_lcd_func.o aesd_write_lcd.o aesd_lcd_util.o lcd.o wiringPi.o wiringPiI2C.o
-DEP := aesd_lcd_util.h lcd.h version.h wiringPi.h wiringPiI2C.h
+OBJ := aesd_lcd_func.o aesd_write_lcd.o aesd_lcd_util.o wiringPi.o wiringPiI2C.o
+DEP := aesd_lcd_util.h version.h wiringPi.h wiringPiI2C.h
 
 ifeq ($(CC),)
 	CC   := $(CROSS_COMPILE)gcc

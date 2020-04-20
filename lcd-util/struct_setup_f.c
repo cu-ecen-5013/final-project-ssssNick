@@ -62,13 +62,19 @@ int struct_setup_f( int argc, char **argv, struct aesd_struct *util_struct )
 
     if( util_struct->flag_t == 1 )
     {
-        util_struct->read_f  = setup_read_f;
-        util_struct->write_f = call_write_test_f;
+        util_struct->read_f       = call_read_test_f;//setup_read_f;
+        util_struct->read_pipe_f  = call_read_pipe_f;
+        util_struct->write_f      = call_write_test_f;
+        util_struct->write_lcd_f  = call_write_i2c_f;
+        util_struct->write_pipe_f = call_write_pipe_f;
     }
     else
     {
-        util_struct->read_f  = test_func_1;//call_default_f;
-        util_struct->write_f = call_default_f;
+        util_struct->read_f       = test_func_1;
+        util_struct->read_pipe_f  = call_default_f;
+        util_struct->write_f      = call_default_f;
+        util_struct->write_lcd_f  = call_default_f;
+        util_struct->write_pipe_f = call_default_f;
     }
 
     util_struct->daemon_f = call_daemon_f;

@@ -4,9 +4,12 @@ EXE := aesd_lcd_util
 OBJ :=                          \
         aesd_lcd_func.o         \
         aesd_lcd_util.o         \
-        aesd_write_lcd.o        \
         call_daemon_f.o         \
+        call_read_pipe_f.o      \
         call_read_test_f.o      \
+        call_write_i2c_f.o      \
+        call_write_lcd_f.o      \
+        call_write_pipe_f.o     \
         call_write_test_f.o     \
         rd_shared_mem_f.o       \
         setup_read_f.o          \

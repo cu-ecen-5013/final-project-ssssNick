@@ -1,7 +1,7 @@
 
 #include "aesd_lcd_util.h"
 
-int call_write_lcd_f ( struct aesd_struct *util_struct )
+int call_write_i2c_f ( struct aesd_struct *util_struct )
 {
     int cnt_i;
     int pid_i;
@@ -69,32 +69,6 @@ int call_write_lcd_f ( struct aesd_struct *util_struct )
     aesd_lcd_type_ln( util_struct->i2c_fd, "out of here!!" );
 
     close(util_struct->i2c_fd);
-    util_struct->i2c_fd = 0;
-
-    return 0;
-}
-
-int test_func_1( struct aesd_struct *util_struct )
-{
-    int fd1 = 0;
-
-    syslog( LOG_DEBUG, "Test func 1; testing LCD with ported functions" );
-
-    if (wiringPiSetup () == -1) exit (1);
-
-    fd1 = wiringPiI2CSetup( AESD_I2C_ADDR );
-
-    // lcd_init(); // setup LCD
-    aesd_lcd_init( fd1 );
-
-    aesd_lcd_clear  ( fd1 );
-    aesd_lcd_loc    ( fd1, util_struct->line1 );
-    aesd_lcd_type_ln( fd1, "Thanks for the" );
-    aesd_lcd_loc    ( fd1, util_struct->line2 );
-    aesd_lcd_type_ln( fd1, "time we shared" );
-
-    close(fd1);
-
     util_struct->i2c_fd = 0;
 
     return 0;

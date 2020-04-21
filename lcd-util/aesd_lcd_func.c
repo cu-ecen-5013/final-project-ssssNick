@@ -110,7 +110,18 @@ int call_read_lcd_f( struct aesd_struct *util_struct )
 /******************************************************************************/
 void clean_up_f( struct aesd_struct *util_struct )
 {
+    struct aesd_ll_struct *walker = NULL;
+
     syslog( LOG_DEBUG, "Cleaning up aesd util" );
+
+    while( util_struct->head != NULL )
+    {
+        walker = util_struct->head;
+        util_struct->head = util_struct->head->nxptr;
+        free(walker);
+
+        syslog( LOG_DEBUG, "Freeing ll memory" );
+    }
 
     syslog( LOG_DEBUG, "Closing log" );    
     closelog();

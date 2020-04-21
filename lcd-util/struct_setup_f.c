@@ -27,17 +27,22 @@ int struct_setup_f( int argc, char **argv, struct aesd_struct *util_struct )
     util_struct->a = NULL;
     util_struct->b = NULL;
 
+    util_struct->head = NULL;
+
     signal( SIGINT,  common_sig_handle_f );
     signal( SIGTERM, common_sig_handle_f );
 
     openlog( "aesd_lcd_util_logs", LOG_PID, LOG_USER );
 
-    while( (param = getopt( argc, argv, "drtws:" )) != -1 )
+    while( (param = getopt( argc, argv, "dlrtws:" )) != -1 )
     {
         switch( param )
         {
             case 'd':
                 util_struct->flag_d = 1;
+                break;
+            case 'l':
+                util_struct->flag_l = 1;
                 break;
             case 'r':
                 util_struct->flag_r = 1;
@@ -72,15 +77,32 @@ int struct_setup_f( int argc, char **argv, struct aesd_struct *util_struct )
     {
         util_struct->read_f       = test_func_1;
         util_struct->read_pipe_f  = call_default_f;
-        util_struct->write_f      = call_default_f;
+        util_struct->write_f      = call_write_i2c_ll_f;
         util_struct->write_lcd_f  = call_default_f;
         util_struct->write_pipe_f = call_default_f;
     }
 
     util_struct->daemon_f = call_daemon_f;
 
-    util_struct->line1 = ASED_16x2_LINE1;
-    util_struct->line2 = ASED_16x2_LINE2;
+    if( util_struct->flag_l == 1 )
+    {        
+        util_struct->line1 = ASED_16x2_LINE1;
+        util_struct->line2 = ASED_16x2_LINE2;
+        util_struct->line3 = 0x00;
+        util_struct->line4 = 0x00;
+    }
+    else
+    {
+        // util_struct->line1 = ASED_20x4_LINE1;
+        // util_struct->line2 = ASED_20x4_LINE2;
+        // util_struct->line3 = ASED_20x4_LINE3;
+        // util_struct->line4 = ASED_20x4_LINE4;
+
+        util_struct->line1 = ASED_16x2_LINE1;
+        util_struct->line2 = ASED_16x2_LINE2;
+        util_struct->line3 = 0x00;
+        util_struct->line4 = 0x00;
+    }
 
     return 0;
 }

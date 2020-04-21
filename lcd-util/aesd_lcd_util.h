@@ -4,7 +4,7 @@
 
 #include <ctype.h>
 #include <errno.h>
-#include <fcntl.h> 
+#include <fcntl.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdio.h>
@@ -15,8 +15,8 @@
 #include <sys/shm.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
-
 #include "wiringPi.h"
 #include "wiringPiI2C.h"
 
@@ -40,6 +40,10 @@
 #define AESD_LCD_CMD    (0) // Mode - Sending command
 #define ASED_16x2_LINE1 (0x80) // 1st line
 #define ASED_16x2_LINE2 (0xC0) // 2nd line
+#define ASED_20x4_LINE1 (0x00) // 1st line
+#define ASED_20x4_LINE2 (0x00) // 2nd line
+#define ASED_20x4_LINE3 (0x00) // 3rd line
+#define ASED_20x4_LINE4 (0x00) // 4th line
 #define AESD_LCD_BACKLT (0x08)  // On
 #define AESD_LCD_ENABLE (0b00000100) // Enable bit
 //////////////////////////////////////////////
@@ -47,11 +51,21 @@
 /* global exit flag; set by signal handler */
 int *flag_to_exit;
 
+struct aesd_ll_struct
+{
+    int count;
+
+    time_t ltime;
+
+    struct aesd_ll_struct *nxptr;
+};
+
 /* structure to be passed around */
 struct aesd_struct
 {
     /* run flag */
     int flag_d;     /* daemon flag  */
+    int flag_l;     /* lcd flag: 0=20x4, 1=16x2    */
     int flag_r;     /* read flag    */
     int flag_s;     /* seed flag    */
     int flag_t;     /* test flag    */
@@ -84,6 +98,8 @@ struct aesd_struct
     int line3;
     int line4;
 
+    struct aesd_ll_struct *head;
+
     /* function handlers */
     int (*daemon_f)    ( struct aesd_struct * );
     int (*read_f)      ( struct aesd_struct * );
@@ -93,14 +109,15 @@ struct aesd_struct
     int (*write_pipe_f)( struct aesd_struct * );
 };
 
-int call_daemon_f    ( struct aesd_struct * );
-int call_default_f   ( struct aesd_struct * );
-int call_read_lcd_f  ( struct aesd_struct * );
-int call_read_pipe_f ( struct aesd_struct * );
-int call_write_i2c_f ( struct aesd_struct * );
-int call_write_lcd_f ( struct aesd_struct * );
-int call_write_pipe_f( struct aesd_struct * );
-int call_write_test_f( struct aesd_struct * );
+int call_daemon_f      ( struct aesd_struct * );
+int call_default_f     ( struct aesd_struct * );
+int call_read_lcd_f    ( struct aesd_struct * );
+int call_read_pipe_f   ( struct aesd_struct * );
+int call_write_i2c_f   ( struct aesd_struct * );
+int call_write_i2c_ll_f( struct aesd_struct * );
+int call_write_lcd_f   ( struct aesd_struct * );
+int call_write_pipe_f  ( struct aesd_struct * );
+int call_write_test_f  ( struct aesd_struct * );
 
 int setup_read_f     ( struct aesd_struct * );
 int call_read_test_f ( struct aesd_struct * );

@@ -21,10 +21,14 @@
 #include <linux/delay.h>
 #include <linux/i2c.h>
 
-#define LCD_ADDR 0x27
+#define LCD_DEV_ADDR 0x27
+#define CHARS_PER_ROW 20
+#define NUM_ROWS 4
+
 #define TOP_LEFT_ADDR 0x80
+#define SECOND_ROW_LEFT_ADDR 0xC0 
+#define THIRD_ROW_LEFT_ADDR 0x94
 #define BOTTOM_LEFT_ADDR 0xD4
-#define BOTTOM_RIGHT_ADDR (BOTTOM_LEFT_ADDR + 19)
 
 #include "lcd.h"
 int lcd_major =   0; // use dynamic major
@@ -45,7 +49,7 @@ struct i2c_client* i2c_client;
 
 static struct i2c_board_info __initdata board_info[] =  {
 	{
-		I2C_BOARD_INFO("PCF8574", LCD_ADDR),
+		I2C_BOARD_INFO("PCF8574", LCD_DEV_ADDR),
 	}
 };
 
@@ -132,6 +136,34 @@ int lcd_release(struct inode *inode, struct file *filp)
 	return 0;
 }
 
+int fpos_to_addr(loff_t pos_in)
+{
+	int pos = (int)(pos_in);
+	int addr;
+
+	if ((pos >= 0 * CHARS_PER_ROW) && (pos < 1 * CHARS_PER_ROW))
+	{
+		addr = pos - 0 * CHARS_PER_ROW + TOP_LEFT_ADDR;
+	}
+
+	else if ((pos >= 1 * CHARS_PER_ROW) && (pos < 2 * CHARS_PER_ROW))
+	{
+		addr = pos - 1 * CHARS_PER_ROW + SECOND_ROW_LEFT_ADDR;
+	}
+
+	else if ((pos >= 2 * CHARS_PER_ROW) && (pos < 3 * CHARS_PER_ROW))
+	{
+		addr = pos - 2 * CHARS_PER_ROW + THIRD_ROW_LEFT_ADDR;
+	}
+
+	else if ((pos >= 3 * CHARS_PER_ROW) && (pos < 4 * CHARS_PER_ROW))
+	{
+		addr = pos - 3 * CHARS_PER_ROW + BOTTOM_LEFT_ADDR;
+	}
+
+	return pos;
+}
+
 ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
                 loff_t *f_pos)
 {
@@ -155,9 +187,10 @@ ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
 		goto free;
 	}
 
-	send_command(*(f_pos));	// Tell LCD where to write to on screen
 
-	for(i = 0; (i < count) && (*(f_pos) <= BOTTOM_RIGHT_ADDR); i++, (*(f_pos))++)
+	send_command(fpos_to_addr(*(f_pos)));	// Tell LCD where to write to on screen
+
+	for(i = 0; (i < count) && (*(f_pos) < CHARS_PER_ROW * NUM_ROWS); i++, (*(f_pos))++)
 	{
 		send_data(kern_buf[i]);
 	}
@@ -176,7 +209,7 @@ out:
 loff_t lcd_llseek(struct file *filp, loff_t off, int whence)
 {
 	loff_t newpos;
-	
+
 	switch(whence) {
 	  case 0: /* SEEK_SET */
 		newpos = off;
@@ -187,7 +220,7 @@ loff_t lcd_llseek(struct file *filp, loff_t off, int whence)
 		break;
 
 	  case 2: /* SEEK_END */
-		newpos = BOTTOM_RIGHT_ADDR + 1;
+		newpos = CHARS_PER_ROW * NUM_ROWS;
 		break;
 
 	  default: /* can't happen */

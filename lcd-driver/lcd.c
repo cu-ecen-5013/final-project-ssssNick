@@ -22,11 +22,16 @@
 #include <linux/i2c.h>
 
 #define LCD_ADDR 0x27
+#define TOP_LEFT_ADDR 0x80
+#define BOTTOM_LEFT_ADDR 0xD4
+#define BOTTOM_RIGHT_ADDR (BOTTOM_LEFT_ADDR + 19)
 
 #include "lcd.h"
 int lcd_major =   0; // use dynamic major
 int lcd_minor =   0;
 int BLEN = 1;
+size_t i2c_error;
+
 
 MODULE_LICENSE("Dual BSD/GPL");
 
@@ -54,7 +59,7 @@ void write_word(int data)
 		temp |= 0x08;
 	else
 		temp &= 0xF7;
-	i2c_smbus_write_byte(i2c_client, temp);
+	i2c_error = i2c_smbus_write_byte(i2c_client, temp);
 }
 
 void send_command(int comm)
@@ -117,6 +122,7 @@ void init_lcd( void )
 int lcd_open(struct inode *inode, struct file *filp)
 {
 	PDEBUG("open");
+	filp->f_pos = TOP_LEFT_ADDR;	// Top-left corner of LCD screen
 	return 0;
 }
 
@@ -132,7 +138,6 @@ ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
 	ssize_t retval = -ENOMEM;
 	char *kern_buf;
 	size_t i;
-	int addr;
 
 	PDEBUG("write %zu bytes", count);
 	
@@ -150,15 +155,15 @@ ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
 		goto free;
 	}
 
-	addr = 0x80;
-	send_command(addr);
+	send_command(*(f_pos));	// Tell LCD where to write to on screen
 
-	for(i = 0; i < count; i++)
+	for(i = 0; (i < count) && (*(f_pos) <= BOTTOM_RIGHT_ADDR); i++, (*(f_pos))++)
 	{
 		send_data(kern_buf[i]);
 	}
 
-	retval = count;
+	if(i2c_error) retval = i2c_error;
+	else retval = i;
 
 free:
 	kfree(kern_buf);
@@ -168,8 +173,34 @@ out:
 	return retval;
 }
 
+loff_t lcd_llseek(struct file *filp, loff_t off, int whence)
+{
+	loff_t newpos;
+	
+	switch(whence) {
+	  case 0: /* SEEK_SET */
+		newpos = off;
+		break;
+
+	  case 1: /* SEEK_CUR */
+		newpos = filp->f_pos + off;
+		break;
+
+	  case 2: /* SEEK_END */
+		newpos = BOTTOM_RIGHT_ADDR + 1;
+		break;
+
+	  default: /* can't happen */
+		return -EINVAL;
+	}
+	if (newpos < 0) return -EINVAL;
+	filp->f_pos = newpos;
+	return newpos;
+}
+
 struct file_operations lcd_fops = {
 	.owner =    THIS_MODULE,
+	.llseek =   lcd_llseek,
 	.write =    lcd_write,
 };
 

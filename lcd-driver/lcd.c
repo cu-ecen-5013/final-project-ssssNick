@@ -26,8 +26,8 @@
 #define NUM_ROWS 4
 
 #define TOP_LEFT_ADDR 0x80
-#define SECOND_ROW_LEFT_ADDR 0xC0 
-#define THIRD_ROW_LEFT_ADDR 0x94
+#define SECOND_ROW_LEFT_ADDR 0x94
+#define THIRD_ROW_LEFT_ADDR 0xC0
 #define BOTTOM_LEFT_ADDR 0xD4
 
 #include "lcd.h"

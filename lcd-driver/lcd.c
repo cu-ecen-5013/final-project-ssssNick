@@ -186,11 +186,14 @@ ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
 		goto free;
 	}
 
-
-	send_command(fpos_to_addr(*(f_pos)));	// Tell LCD where to write to on screen
-
 	for(i = 0; i < count; i++)
 	{
+		// Check if need to start on new line
+		if(*(f_pos) % 20 == 0)
+		{	
+			send_command(fpos_to_addr(*(f_pos)));	// Tell LCD where to write to on screen
+		}
+	
 		send_data(kern_buf[i]);
 		if(*(f_pos) < CHARS_PER_ROW * NUM_ROWS) (*(f_pos))++;
 		else *(f_pos) = 0;

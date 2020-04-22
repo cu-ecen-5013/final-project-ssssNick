@@ -26,8 +26,8 @@
 #define NUM_ROWS 4
 
 #define TOP_LEFT_ADDR 0x80
-#define SECOND_ROW_LEFT_ADDR 0x94
-#define THIRD_ROW_LEFT_ADDR 0xC0
+#define SECOND_ROW_LEFT_ADDR 0xC0
+#define THIRD_ROW_LEFT_ADDR 0x94
 #define BOTTOM_LEFT_ADDR 0xD4
 
 #include "lcd.h"
@@ -126,7 +126,6 @@ void init_lcd( void )
 int lcd_open(struct inode *inode, struct file *filp)
 {
 	PDEBUG("open");
-	filp->f_pos = TOP_LEFT_ADDR;	// Top-left corner of LCD screen
 	return 0;
 }
 
@@ -139,7 +138,7 @@ int lcd_release(struct inode *inode, struct file *filp)
 int fpos_to_addr(loff_t pos_in)
 {
 	int pos = (int)(pos_in);
-	int addr;
+	int addr = 0;
 
 	if ((pos >= 0 * CHARS_PER_ROW) && (pos < 1 * CHARS_PER_ROW))
 	{
@@ -161,7 +160,7 @@ int fpos_to_addr(loff_t pos_in)
 		addr = pos - 3 * CHARS_PER_ROW + BOTTOM_LEFT_ADDR;
 	}
 
-	return pos;
+	return addr;
 }
 
 ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
@@ -190,9 +189,11 @@ ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
 
 	send_command(fpos_to_addr(*(f_pos)));	// Tell LCD where to write to on screen
 
-	for(i = 0; (i < count) && (*(f_pos) < CHARS_PER_ROW * NUM_ROWS); i++, (*(f_pos))++)
+	for(i = 0; i < count; i++)
 	{
 		send_data(kern_buf[i]);
+		if(*(f_pos) < CHARS_PER_ROW * NUM_ROWS) (*(f_pos))++;
+		else *(f_pos) = 0;
 	}
 
 	if(i2c_error) retval = i2c_error;
@@ -220,7 +221,7 @@ loff_t lcd_llseek(struct file *filp, loff_t off, int whence)
 		break;
 
 	  case 2: /* SEEK_END */
-		newpos = CHARS_PER_ROW * NUM_ROWS;
+		newpos = (CHARS_PER_ROW * NUM_ROWS) - 1;
 		break;
 
 	  default: /* can't happen */

@@ -48,11 +48,13 @@ int main(int argc, char *argv[])
   writeStr = "SEEK_SET to line 2";
   write(fd, writeStr, strlen(writeStr));
 
-  lseek(fd, 20, SEEK_CUR);
+  //lseek(fd, 20, SEEK_CUR);
+  lseek(fd, 40, SEEK_SET);
   writeStr = "SEEK_CUR to line 3";
   write(fd, writeStr, strlen(writeStr));
 
-  lseek(fd, 0, SEEK_END);
+  //lseek(fd, 0, SEEK_END);
+  lseek(fd, 79, SEEK_SET);
   writeStr = "SEEK_END wraps around";
   write(fd, writeStr, strlen(writeStr));
 

@@ -26,7 +26,7 @@ subdir_lcd-util_all :
 subdir_prj_base_all :
 	$(MAKE) -C prj_base all
 
-subdir_lcd_test_all :
+subdir_lcd-test_all :
 	$(MAKE) -C lcd-test all
 
 clean :
@@ -41,5 +41,5 @@ subdir_lcd-util_clean :
 subdir_prj_base_clean : 
 	$(MAKE) -C prj_base clean
 
-subdir_lcd_test_clean :
+subdir_lcd-test_clean :
 	$(MAKE) -C lcd-test clean

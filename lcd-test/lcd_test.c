@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
   sleep(5);
 
   lseek(fd, 20, SEEK_SET);
-  writeStr = "SEEK_SET tmano line 2";
+  writeStr = "SEEK_SET to line 2";
   write(fd, writeStr, strlen(writeStr));
 
   sleep(5);

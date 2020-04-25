@@ -14,6 +14,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#define CLEAR_SCREEN "                                                                                "
+
 int main(int argc, char *argv[])
 {
 
@@ -36,10 +38,22 @@ int main(int argc, char *argv[])
 
   //Test writing and seeking on LCD
 
+  writeStr = CLEAR_SCREEN;
+  write(fd, writeStr, strlen(writeStr));
+
   writeStr = "Writing from beginning";
   write(fd, writeStr, strlen(writeStr));
 
-  writeStr = "\nWriting some more";
+  lseek(fd, 20, SEEK_SET);
+  writeStr = "SEEK_SET to line 2";
+  write(fd, writeStr, strlen(writeStr));
+
+  lseek(fd, 20, SEEK_CUR);
+  writeStr = "SEEK_CUR to line 3";
+  write(fd, writeStr, strlen(writeStr));
+
+  lseek(fd, 0, SEEK_END);
+  writeStr = "SEEK_END wraps around";
   write(fd, writeStr, strlen(writeStr));
 
   close(fd);

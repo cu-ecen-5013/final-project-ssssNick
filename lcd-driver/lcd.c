@@ -195,7 +195,7 @@ ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
 		}
 	
 		send_data(kern_buf[i]);
-		if(*(f_pos) < CHARS_PER_ROW * NUM_ROWS) (*(f_pos))++;
+		if(*(f_pos) < (CHARS_PER_ROW * NUM_ROWS - 1)) (*(f_pos))++;
 		else *(f_pos) = 0;
 	}
 

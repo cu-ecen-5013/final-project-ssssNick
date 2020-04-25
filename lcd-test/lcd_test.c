@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
   writeStr = "SEEK_SET to line 2";
   write(fd, writeStr, strlen(writeStr));
 
-  lseek(fd, 20, SEEK_CUR);
+  lseek(fd, 2, SEEK_CUR);
   writeStr = "SEEK_CUR to line 3";
   write(fd, writeStr, strlen(writeStr));
 

@@ -2,3 +2,5 @@
 prj_base/aesd_lcd_util.h.gch
 aesd_lcd_util
 lcd-test/lcd_test
+aesd_lcd_util_sp1
+prj_base/aesd_lcd_util_org

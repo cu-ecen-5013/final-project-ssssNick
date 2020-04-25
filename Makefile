@@ -15,7 +15,7 @@ endif
 
 default : clean $(EXE)
 
-all : clean_all subdir_lcd-util_all subdir_prj_base_all $(EXE)
+all : clean_all subdir_lcd-util_all subdir_prj_base_all subdir_lcd_test_all $(EXE)
 
 $(EXE) : aesd_lcd_util.c
 	$(CC) $(CFLAGS) -o $(EXE) aesd_lcd_util.c $(INCLUDES) $(LDFLAGS)
@@ -26,10 +26,13 @@ subdir_lcd-util_all :
 subdir_prj_base_all :
 	$(MAKE) -C prj_base all
 
+subdir_lcd_test_all :
+	$(MAKE) -C lcd_test all
+
 clean :
 	rm -f $(EXE)
 
-clean_all : subdir_lcd-util_clean subdir_prj_base_clean
+clean_all : subdir_lcd-util_clean subdir_prj_base_clean subdir_lcd_test_clean
 	rm -f $(EXE)
 
 subdir_lcd-util_clean : 
@@ -37,3 +40,6 @@ subdir_lcd-util_clean :
 
 subdir_prj_base_clean : 
 	$(MAKE) -C prj_base clean
+
+subdir_lcd_test_clean :
+	$(MAKE) -C lcd_test clean

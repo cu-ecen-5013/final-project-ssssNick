@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#define DELAY_TIME 3
 #define CLEAR_SCREEN "                                                                                "
 
 int main(int argc, char *argv[])
@@ -42,29 +43,29 @@ int main(int argc, char *argv[])
   writeStr = CLEAR_SCREEN;
   write(fd, writeStr, strlen(writeStr));
 
-  sleep(5);
+  sleep(DELAY_TIME);
 
   writeStr = "Writing from beginning";
   write(fd, writeStr, strlen(writeStr));
 
-  sleep(5);
+  sleep(DELAY_TIME);
 
   lseek(fd, 20, SEEK_SET);
   writeStr = "SEEK_SET to line 2";
   write(fd, writeStr, strlen(writeStr));
 
-  sleep(5);
+  sleep(DELAY_TIME);
 
   lseek(fd, 2, SEEK_CUR);
   writeStr = "SEEK_CUR to line 3";
   write(fd, writeStr, strlen(writeStr));
 
-  sleep(5);
+  sleep(DELAY_TIME);
 
   writeStr = CLEAR_SCREEN;
   write(fd, writeStr, strlen(writeStr));
 
-  sleep(5);
+  sleep(DELAY_TIME);
 
   lseek(fd, 0, SEEK_END);
   writeStr = "SEEK_END wraps around";

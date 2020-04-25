@@ -189,7 +189,7 @@ ssize_t lcd_write(struct file *filp, const char __user *buf, size_t count,
 	for(i = 0; i < count; i++)
 	{
 		// Send address for start and new line
-		if((i == 0) || ((int)(*(f_pos)) % CHARS_PER_ROW == 0))
+		if((i == 0) || (*(f_pos) == 0) || (*(f_pos) == 20) || (*(f_pos) == 40) || (*(f_pos) == 60))
 		{	
 			send_command(fpos_to_addr(*(f_pos)));	// Tell LCD where to write to on screen
 		}

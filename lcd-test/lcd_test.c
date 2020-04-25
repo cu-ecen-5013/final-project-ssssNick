@@ -2,7 +2,8 @@
 //
 // Author: Nick Brubaker
 //
-// References://    Checking for sucessful read - LSP textbook
+// References:
+//    Checking for sucessful read - LSP textbook
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -41,16 +42,29 @@ int main(int argc, char *argv[])
   writeStr = CLEAR_SCREEN;
   write(fd, writeStr, strlen(writeStr));
 
+  sleep(5);
+
   writeStr = "Writing from beginning";
   write(fd, writeStr, strlen(writeStr));
 
+  sleep(5);
+
   lseek(fd, 20, SEEK_SET);
-  writeStr = "SEEK_SET to line 2";
+  writeStr = "SEEK_SET tmano line 2";
   write(fd, writeStr, strlen(writeStr));
+
+  sleep(5);
 
   lseek(fd, 2, SEEK_CUR);
   writeStr = "SEEK_CUR to line 3";
   write(fd, writeStr, strlen(writeStr));
+
+  sleep(5);
+
+  writeStr = CLEAR_SCREEN;
+  write(fd, writeStr, strlen(writeStr));
+
+  sleep(5);
 
   lseek(fd, 0, SEEK_END);
   writeStr = "SEEK_END wraps around";

@@ -14,9 +14,12 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
 
-#define DELAY_TIME 3
-#define CLEAR_SCREEN "                                                                                "
+#define LCD_IOC_MAGIC  0x16
+#define LCD_IOCLEARSCREEN _IO(LCD_IOC_MAGIC, 0)
+
+#define DELAY_TIME 5
 
 int main(int argc, char *argv[])
 {
@@ -40,8 +43,7 @@ int main(int argc, char *argv[])
 
   //Test writing and seeking on LCD
 
-  writeStr = CLEAR_SCREEN;
-  write(fd, writeStr, strlen(writeStr));
+  ioctl(fd, LCD_IOCLEARSCREEN, 0);
 
   sleep(DELAY_TIME);
 
@@ -62,8 +64,7 @@ int main(int argc, char *argv[])
 
   sleep(DELAY_TIME);
 
-  writeStr = CLEAR_SCREEN;
-  write(fd, writeStr, strlen(writeStr));
+  ioctl(fd, LCD_IOCLEARSCREEN, 0);
 
   sleep(DELAY_TIME);
 

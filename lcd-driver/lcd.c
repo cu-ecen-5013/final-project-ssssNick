@@ -5,9 +5,11 @@
  * @author Nick Brubaker
  * @date 2020-4-8
  *
- * External code used: 
+ * External code referenced or modified and used: 
  * 	https://github.com/eeenjoy/I2C_LCD2004/blob/master/For_Raspberry_Pi/C/i2c_lcd2004_test.c
  *  https://gist.github.com/jnewc/f8b668c41d7d4a68f6e46f46e8c559c2
+ *  https://github.com/cu-ecen-5013/assignment-7-buildroot-and-yocto-kernel-builds-ssssNick/blob/master/scull/scull.h
+ *  https://github.com/cu-ecen-5013/aesd-assignments/blob/assignment9/aesd_ioctl.h
  */
 
 #include <linux/init.h>
@@ -21,9 +23,23 @@
 #include <linux/delay.h>
 #include <linux/i2c.h>
 
+#ifdef __KERNEL__
+#include <asm-generic/ioctl.h>
+#include <linux/types.h>
+#else
+#include <sys/ioctl.h>
+#include <stdint.h>
+#endif
+
+#define LCD_IOC_MAGIC  0x16
+
+#define LCD_IOCLEARSCREEN _IO(LCD_IOC_MAGIC, 0)
+
 #define LCD_DEV_ADDR 0x27
 #define CHARS_PER_ROW 20
 #define NUM_ROWS 4
+
+#define LCD_CLEARDISPLAY 0x01
 
 #define TOP_LEFT_ADDR 0x80
 #define SECOND_ROW_LEFT_ADDR 0xC0
@@ -118,6 +134,11 @@ void init_lcd( void )
 	usleep_range(5000, 6000);
 	send_command(0x01);	// Clear Screen
 	i2c_smbus_write_byte(i2c_client, 0x08);
+}
+
+void clear_lcd( void )
+{
+	send_command(LCD_CLEARDISPLAY);	//clear Screen
 }
 
 
@@ -235,10 +256,27 @@ loff_t lcd_llseek(struct file *filp, loff_t off, int whence)
 	return newpos;
 }
 
+long lcd_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+{
+	int retval = 0;
+
+	switch(cmd) {
+	  case LCD_IOCLEARSCREEN:
+		clear_lcd();
+		break;
+
+	  default: 
+		return -ENOTTY;
+	}
+	return retval;
+
+}
+
 struct file_operations lcd_fops = {
 	.owner =    THIS_MODULE,
 	.llseek =   lcd_llseek,
 	.write =    lcd_write,
+	.unlocked_ioctl = lcd_ioctl,
 };
 
 static int lcd_setup_cdev(struct lcd_dev *dev)

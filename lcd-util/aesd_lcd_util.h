@@ -124,19 +124,20 @@ struct aesd_struct
 
 int call_daemon_f      ( struct aesd_struct * );
 int call_default_f     ( struct aesd_struct * );
-int call_read_lcd_f    ( struct aesd_struct * );
 int call_read_log_f    ( struct aesd_struct * );
 int call_read_pipe_f   ( struct aesd_struct * );
 int call_write_i2c_f   ( struct aesd_struct * );
-int call_write_i2c_ll_f( struct aesd_struct * );
 int call_write_lcd_f   ( struct aesd_struct * );
 int call_write_pipe_f  ( struct aesd_struct * );
 int call_write_test_f  ( struct aesd_struct * );
 
-int setup_read_f     ( struct aesd_struct * );
 int call_read_test_f ( struct aesd_struct * );
 int rd_shared_mem_f  ( struct aesd_struct * );
 
+/* removed function */
+//int call_read_lcd_f    ( struct aesd_struct * );
+//int call_write_i2c_ll_f( struct aesd_struct * );
+//int setup_read_f     ( struct aesd_struct * );
 
 int write_lcd_f      ( struct aesd_struct * );
 

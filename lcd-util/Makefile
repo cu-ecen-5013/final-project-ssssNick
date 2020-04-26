@@ -9,15 +9,15 @@ OBJ :=                          \
         call_read_pipe_f.o      \
         call_read_test_f.o      \
         call_write_i2c_f.o      \
-        call_write_i2c_ll_f.o   \
         call_write_lcd_f.o      \
         call_write_pipe_f.o     \
         call_write_test_f.o     \
         rd_shared_mem_f.o       \
-        setup_read_f.o          \
         struct_setup_f.o        \
         wiringPi.o              \
         wiringPiI2C.o
+#        call_write_i2c_ll_f.o   \
+#        setup_read_f.o          \
 
 DEP :=                          \
         aesd_lcd_util.h         \

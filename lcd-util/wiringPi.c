@@ -50,7 +50,11 @@
 //	02 May 2012:
 //		Added in the 2 UART pins
 //		Change maxPins to numPins to more accurately reflect purpose
-
+/*
+ * wiringPi.h:
+ *  Arduino like Wiring library for the Raspberry Pi.
+ *  Copyright (c) 2012-2017 Gordon Henderson
+ ***********************************************************************/
 
 #include <stdio.h>
 #include <stdarg.h>

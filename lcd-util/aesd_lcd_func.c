@@ -2,12 +2,46 @@
 #include "aesd_lcd_util.h"
 
 /******************************************************************************/
+/* Code Ref                                                                   */
+/*
+ * wiringPi:
+ *  Arduino look-a-like Wiring library for the Raspberry Pi
+ *  Copyright (c) 2012-2017 Gordon Henderson
+ *  Additional code for pwmSetClock by Chris Hall <chris@kchall.plus.com>
+ *
+ *  Thanks to code samples from Gert Jan van Loo and the
+ *  BCM2835 ARM Peripherals manual, however it's missing
+ *  the clock section /grr/mutter/
+ ***********************************************************************
+ * This file is part of wiringPi:
+ *  https://projects.drogon.net/raspberry-pi/wiringpi/
+ *
+ *    wiringPi is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU Lesser General Public License as
+ *    published by the Free Software Foundation, either version 3 of the
+ *    License, or (at your option) any later version.
+ *
+ *    wiringPi is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU Lesser General Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser General Public
+ *    License along with wiringPi.
+ *    If not, see <http://www.gnu.org/licenses/>.
+ ***********************************************************************/
+/******************************************************************************/
+/* Additional reference used:                                                 */
+/* https://stackoverflow.com/questions/1570511/c-code-to-get-the-ip-address   */
+/******************************************************************************/
+
+/******************************************************************************/
 /* re-purposed functions from the lcd example                                 */
 /* in wiringPi                                                                */
 /******************************************************************************/
 
 /******************************************************************************/
-/**/
+/* Breaks info to write into upper/lower bytes and call write to i2c lcd      */
 /******************************************************************************/
 void aesd_lcd_byte( int input_fd, int bits, int mode )
 {
@@ -30,7 +64,7 @@ void aesd_lcd_byte( int input_fd, int bits, int mode )
 }
 
 /******************************************************************************/
-/**/
+/* Clear the screen                                                           */
 /******************************************************************************/
 void aesd_lcd_clear( int input_fd )
 {
@@ -39,7 +73,7 @@ void aesd_lcd_clear( int input_fd )
 }
 
 /******************************************************************************/
-/**/
+/* Setup LCD for writing 16x2 using I2C Wiring Pi source code                 */
 /******************************************************************************/
 void aesd_lcd_init( int input_fd )
 {
@@ -54,7 +88,7 @@ void aesd_lcd_init( int input_fd )
 }
 
 /******************************************************************************/
-/**/
+/* Seek to address location                                                   */
 /******************************************************************************/
 void aesd_lcd_loc( int input_fd, int line )
 {
@@ -62,11 +96,10 @@ void aesd_lcd_loc( int input_fd, int line )
 }
 
 /******************************************************************************/
-/**/
+/* Toggle enable pin on LCD display                                           */
 /******************************************************************************/
 void aesd_lcd_toggle( int input_fd, int bits )
 {
-    // Toggle enable pin on LCD display
     delayMicroseconds(500);
     wiringPiI2CReadReg8(input_fd, (bits | AESD_LCD_ENABLE));
     delayMicroseconds(500);
@@ -75,7 +108,7 @@ void aesd_lcd_toggle( int input_fd, int bits )
 }
 
 /******************************************************************************/
-/**/
+/* Write line to lcd                                                          */
 /******************************************************************************/
 void aesd_lcd_type_ln( int input_fd, const char *s )
 {
@@ -86,7 +119,7 @@ void aesd_lcd_type_ln( int input_fd, const char *s )
 }
 
 /******************************************************************************/
-/**/
+/* Function to call as default for unused function calls                      */
 /******************************************************************************/
 int call_default_f( struct aesd_struct *util_struct )
 {
@@ -98,15 +131,7 @@ int call_default_f( struct aesd_struct *util_struct )
 }
 
 /******************************************************************************/
-/**/
-/******************************************************************************/
-int call_read_lcd_f( struct aesd_struct *util_struct )
-{
-    return 0;
-}
-
-/******************************************************************************/
-/**/
+/* Function to clear any allocated memory or close any open file descriptors  */
 /******************************************************************************/
 void clean_up_f( struct aesd_struct *util_struct )
 {
@@ -114,6 +139,7 @@ void clean_up_f( struct aesd_struct *util_struct )
 
     syslog( LOG_DEBUG, "Cleaning up aesd util" );
 
+    /* clear linked-list */
     while( util_struct->head != NULL )
     {
         walker = util_struct->head;
@@ -123,6 +149,15 @@ void clean_up_f( struct aesd_struct *util_struct )
         syslog( LOG_DEBUG, "Freeing ll memory" );
     }
 
+    /* clear handle to i2c module */
+    if( util_struct->i2c_fd > 0 )
+    {
+        syslog( LOG_DEBUG, "Closing I2C FD" ); 
+        close( util_struct->i2c_fd );
+        util_struct->i2c_fd = 0;
+    }
+
+    /* clear handle to lcd module */
     if( util_struct->lcd_fd > 0 )
     {
         syslog( LOG_DEBUG, "Closing LCD FD" ); 
@@ -131,21 +166,23 @@ void clean_up_f( struct aesd_struct *util_struct )
     }
 
     syslog( LOG_DEBUG, "Closing log" );    
+
+    /* close out syslogging */
     closelog();
 }
 
 /******************************************************************************/
-/**/
+/* Signal handler used in all modes                                           */
 /******************************************************************************/
 void common_sig_handle_f( int sig )
 {
-    /*syslog( LOG_DEBUG, "Sig %d caught", sig );*/
+    syslog( LOG_DEBUG, "Sig %d caught", sig );
 
     *flag_to_exit = 1;
 }
 
 /******************************************************************************/
-/**/
+/* Function to test writing to lcd using I2C module                           */
 /******************************************************************************/
 int test_func_1( struct aesd_struct *util_struct )
 {
@@ -168,18 +205,16 @@ int test_func_1( struct aesd_struct *util_struct )
 
     close(fd1);
 
-    util_struct->i2c_fd = 0;
+    fd1 = 0;
 
     return 0;
 }
 
 /******************************************************************************/
-/**/
+/* Light weight function to convert 5 digit integer value to char string      */
 /******************************************************************************/
 void value_pack( int input_val, char *buf )
 {
-    /*syslog( LOG_DEBUG, "Packing Value %d", input_val );*/
-
     buf[4] = 48 + ((input_val/1)%10);
     buf[3] = 48 + ((input_val/10)%10);
     buf[2] = 48 + ((input_val/100)%10);
@@ -188,13 +223,11 @@ void value_pack( int input_val, char *buf )
 }
 
 /******************************************************************************/
-/**/
+/* Light weight function to convert 5 digit char string to integer            */
 /******************************************************************************/
 int value_unpack( char *buf )
 {
     int val = 0;
-
-    /*syslog( LOG_DEBUG, "Unpacking %c%c%c%c into Value", buf[0],buf[1],buf[2],buf[3] );*/
 
     val += 1*(buf[4]-48);
     val += 10*(buf[3]-48);

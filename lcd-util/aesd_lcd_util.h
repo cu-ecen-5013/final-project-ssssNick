@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h> 
 #include <syslog.h>
+#include <sys/ioctl.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/socket.h>
@@ -33,7 +34,11 @@
 #define RD_VAL (2000)       /* ms  */
 #define WR_VAL (30)         /* sec */
 
+#define BUFFER_SIZE (100)
 #define TEST_BUFFER_SIZE (85)
+
+#define LCD_IOC_MAGIC  0x16
+#define LCD_IOCLEARSCREEN _IO(LCD_IOC_MAGIC, 0)
 
 /********************************************/
 /* re-purposed defines from the lcd example */
@@ -105,6 +110,9 @@ struct aesd_struct
 
     struct aesd_ll_struct *head;
 
+    int  log_found;
+    char log_ip_addr[16];
+
     /* function handlers */
     int (*daemon_f)    ( struct aesd_struct * );
     int (*read_f)      ( struct aesd_struct * );
@@ -117,6 +125,7 @@ struct aesd_struct
 int call_daemon_f      ( struct aesd_struct * );
 int call_default_f     ( struct aesd_struct * );
 int call_read_lcd_f    ( struct aesd_struct * );
+int call_read_log_f    ( struct aesd_struct * );
 int call_read_pipe_f   ( struct aesd_struct * );
 int call_write_i2c_f   ( struct aesd_struct * );
 int call_write_i2c_ll_f( struct aesd_struct * );

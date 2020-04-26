@@ -5,6 +5,7 @@ OBJ :=                          \
         aesd_lcd_func.o         \
         aesd_lcd_util.o         \
         call_daemon_f.o         \
+        call_read_log_f.o       \
         call_read_pipe_f.o      \
         call_read_test_f.o      \
         call_write_i2c_f.o      \

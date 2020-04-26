@@ -1,9 +1,15 @@
 
 #include "aesd_lcd_util.h"
 
+/******************************************************************************/
+/**/
+/******************************************************************************/
 int write_lcd_line_f ( int fd, int line_num, char str[20] );
 int collect_ip_addr_f( char ip_addr[17] );
 
+/******************************************************************************/
+/**/
+/******************************************************************************/
 int call_write_lcd_f ( struct aesd_struct *util_struct )
 {
     int ii,iii;
@@ -18,9 +24,11 @@ int call_write_lcd_f ( struct aesd_struct *util_struct )
 
     /* template for each lcd line */
     char ip_addr [17] = "                 ";
+    char no_addr [20] = "VPN No connection/s ";
+
     char ln1 [20] = "                    ";
     char ln2 [20] = "IP                  ";
-    char ln3 [20] = "No VPN connections  ";
+    char ln3 [20] = "VPN No connection/s ";
     char ln4 [60] = ">  Ayden Blotnick  <>  Nick Brubaker   <> Martin Lennartz  <";
     //char ety [20] = "                    ";
     //               012345678901234567890123456789012345678901234567890123456789
@@ -40,17 +48,21 @@ int call_write_lcd_f ( struct aesd_struct *util_struct )
         ln2[ii+3] = ip_addr[ii];
     }
 
-    sleep(5);
-
-    // fd = open( "/dev/lcd", O_RDWR );
     fd = util_struct->lcd_fd;
     
     if( fd < 0 )
     {
         syslog( LOG_ERR, "ERROR - Failed to open LCD file descriptor with returned fd of %d (%d)", fd , errno );
+        return -1;
     }
 
     syslog( LOG_DEBUG, "LCD opened" );
+
+    ioctl(fd, LCD_IOCLEARSCREEN, 0);
+
+    syslog( LOG_DEBUG, "LCD cleared" );
+
+    sleep(1);
 
     write_lcd_line_f( fd, 1, "Setting everything  ");
     write_lcd_line_f( fd, 2, "up so we can see wha");
@@ -62,10 +74,11 @@ int call_write_lcd_f ( struct aesd_struct *util_struct )
 
     while(TRUE)
     {
+        syslog( LOG_DEBUG, "Collecting time info" );
         time( &rawtime );
         current = localtime( &rawtime );
         ctm = asctime(current);
-        //syslog( LOG_DEBUG, "Current time is %s", asctime(current) );
+        syslog( LOG_DEBUG, "Current time is %s", asctime(current) );
         for( ii=0, iii=0; iii<20; iii++ )
         {
             if( ii==2 )
@@ -78,6 +91,23 @@ int call_write_lcd_f ( struct aesd_struct *util_struct )
             }
             ln1[iii] = ctm[ii];
             ii++;
+        }
+
+        syslog( LOG_DEBUG, "Calling read log" );
+        call_read_log_f( util_struct );
+        if( util_struct->log_found == 1 )
+        {
+            for( ii=4; ii<20; ii++ )
+            {
+                ln3[ii] = util_struct->log_ip_addr[ii-4];
+            }
+        }
+        else
+        {
+            for( ii=0; ii<20; ii++ )
+            {
+                ln3[ii] = no_addr[ii];
+            }
         }
 
         write_lcd_line_f( fd, 1, ln1 );
@@ -167,6 +197,11 @@ int collect_ip_addr_f( char ip_addr[17] )
             if( strcmp(ifa->ifa_name, "eth0") == 0 )
             {
                 syslog( LOG_DEBUG, "found eth0" );
+                strcpy( ip_addr, host );
+            }
+            else if( strcmp(ifa->ifa_name, "wlan0") == 0 )
+            {
+                syslog( LOG_DEBUG, "found wlan0" );
                 strcpy( ip_addr, host );
             }
         }

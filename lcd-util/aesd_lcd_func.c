@@ -123,6 +123,13 @@ void clean_up_f( struct aesd_struct *util_struct )
         syslog( LOG_DEBUG, "Freeing ll memory" );
     }
 
+    if( util_struct->lcd_fd > 0 )
+    {
+        syslog( LOG_DEBUG, "Closing LCD FD" ); 
+        close( util_struct->lcd_fd );
+        util_struct->lcd_fd = 0;
+    }
+
     syslog( LOG_DEBUG, "Closing log" );    
     closelog();
 }

@@ -18,7 +18,8 @@ int struct_setup_f( int argc, char **argv, struct aesd_struct *util_struct )
 
     util_struct->pid_rtn = 0;
 
-    util_struct->fd = 0;
+    util_struct->fd     = 0;
+    util_struct->lcd_fd = 0;
 
     util_struct->pack_size = 0;
 
@@ -77,7 +78,7 @@ int struct_setup_f( int argc, char **argv, struct aesd_struct *util_struct )
     {
         util_struct->read_f       = test_func_1;
         util_struct->read_pipe_f  = call_default_f;
-        util_struct->write_f      = call_write_i2c_ll_f;
+        util_struct->write_f      = call_write_lcd_f;
         util_struct->write_lcd_f  = call_default_f;
         util_struct->write_pipe_f = call_default_f;
     }
@@ -102,6 +103,17 @@ int struct_setup_f( int argc, char **argv, struct aesd_struct *util_struct )
         util_struct->line2 = ASED_16x2_LINE2;
         util_struct->line3 = 0x00;
         util_struct->line4 = 0x00;
+    }
+
+    if( util_struct->flag_t == 0 )
+    {
+        util_struct->lcd_fd = open( "/dev/lcd", O_RDWR );
+
+        if( util_struct->lcd_fd <= 0 )
+        {
+            syslog( LOG_ERR, "ERROR - Unable to open LCD device (%d)", errno );
+            return -1;
+        }
     }
 
     return 0;

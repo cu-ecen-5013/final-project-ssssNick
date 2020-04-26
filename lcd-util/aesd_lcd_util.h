@@ -2,9 +2,12 @@
 #ifndef AESD_LCD_UTIL_H
 #define AESD_LCD_UTIL_H
 
+#include <arpa/inet.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <ifaddrs.h>
+#include <netdb.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdio.h>
@@ -13,6 +16,7 @@
 #include <syslog.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
@@ -83,6 +87,7 @@ struct aesd_struct
     int fd;
 
     int i2c_fd;
+    int lcd_fd;
 
     int shmid;
     int status;

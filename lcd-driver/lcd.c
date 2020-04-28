@@ -6,7 +6,7 @@
  * @date 2020-4-8
  *
  * External code referenced or modified and used: 
- * 	https://github.com/eeenjoy/I2C_LCD2004/blob/master/For_Raspberry_Pi/C/i2c_lcd2004_test.c
+ *  https://github.com/eeenjoy/I2C_LCD2004/blob/master/For_Raspberry_Pi/C/i2c_lcd2004_test.c
  *  https://gist.github.com/jnewc/f8b668c41d7d4a68f6e46f46e8c559c2
  *  https://github.com/cu-ecen-5013/assignment-7-buildroot-and-yocto-kernel-builds-ssssNick/blob/master/scull/scull.h
  *  https://github.com/cu-ecen-5013/aesd-assignments/blob/assignment9/aesd_ioctl.h
